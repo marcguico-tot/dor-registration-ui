@@ -1,0 +1,1312 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PACT &amp; Excise Registration</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#12181f;
+    --panel:#1b222b;
+    --panel-2:#212a34;
+    --hairline:#2a333d;
+    --text:#e7e9ec;
+    --muted:#8d98a3;
+    --gold:#d4a24c;
+    --gold-dim:#8a6b32;
+    --teal:#4fa6a0;
+    --warn:#c9724f;
+    --radius:10px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(ellipse at top left, rgba(212,162,76,0.06), transparent 45%),
+      var(--ink);
+    color:var(--text);
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+    padding:32px 20px 80px;
+  }
+  .wrap{max-width:920px;margin:0 auto;}
+
+  header{margin-bottom:28px;}
+  .eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11.5px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--gold);
+    margin-bottom:10px;
+  }
+  h1{
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    font-size:clamp(28px,4vw,38px);
+    line-height:1.1;
+    margin:0 0 8px;
+    letter-spacing:-.01em;
+  }
+  .sub{color:var(--muted);font-size:15px;max-width:640px;line-height:1.5;}
+
+  /* Federal strip */
+  .federal{
+    background:var(--panel);
+    border:1px solid var(--hairline);
+    border-radius:var(--radius);
+    margin:28px 0;
+    overflow:hidden;
+  }
+  .federal-head{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+    padding:16px 20px;
+    cursor:pointer;
+    user-select:none;
+  }
+  .federal-head .tag{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--gold);
+    display:flex;align-items:center;gap:10px;
+  }
+  .federal-head .seal{
+    width:22px;height:22px;border-radius:50%;
+    border:1.5px solid var(--gold-dim);
+    display:flex;align-items:center;justify-content:center;
+    font-size:10px;color:var(--gold);flex:none;
+  }
+  .federal-head .chev{color:var(--muted);transition:transform .25s ease;font-size:13px;}
+  .federal.open .chev{transform:rotate(180deg);}
+  .federal-body{
+    max-height:0;
+    overflow:hidden;
+    transition:max-height .3s ease;
+    border-top:1px solid transparent;
+  }
+  .federal.open .federal-body{
+    max-height:900px;
+    border-top:1px solid var(--hairline);
+  }
+  .federal-body-inner{padding:18px 20px 22px;display:grid;gap:16px;}
+  .federal-body-inner h3{
+    font-family:'Fraunces',serif;font-size:15px;font-weight:600;margin:0 0 6px;color:var(--text);
+  }
+  .federal-body-inner ul{margin:0;padding-left:18px;color:var(--muted);font-size:13.5px;line-height:1.6;}
+  .federal-body-inner li{margin-bottom:4px;}
+  .fed-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+  @media(max-width:640px){.fed-grid{grid-template-columns:1fr;}}
+  .mailbox{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12.5px;color:var(--muted);
+    background:var(--panel-2);
+    border:1px solid var(--hairline);
+    border-radius:8px;
+    padding:10px 12px;
+    line-height:1.6;
+    white-space:pre-line;
+  }
+  a{color:var(--teal);text-decoration:none;border-bottom:1px solid rgba(79,166,160,.35);}
+  a:hover{border-bottom-color:var(--teal);}
+
+  /* Selector */
+  .selector{
+    display:flex;align-items:center;gap:14px;
+    margin:34px 0 22px;
+    flex-wrap:wrap;
+    position:relative;
+  }
+  .selector label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);
+  }
+  .combobox{position:relative;min-width:280px;}
+  .combo-trigger{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    background:var(--panel);
+    color:var(--text);
+    border:1px solid var(--hairline);
+    border-radius:8px;
+    padding:12px 14px 12px 16px;
+    font-family:'Inter',sans-serif;
+    font-size:15px;font-weight:500;
+    cursor:pointer;
+    width:100%;
+  }
+  .combo-trigger .placeholder-text{color:var(--muted);font-weight:400;}
+  #comboTriggerText{display:flex;align-items:center;gap:12px;}
+  #comboTriggerText .code{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;color:var(--muted);
+  }
+  #comboTriggerText .name{color:var(--text);font-weight:600;}
+  .combo-trigger .code{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;color:var(--muted);
+    margin-right:8px;
+  }
+  .combo-trigger .chev{color:var(--muted);font-size:12px;transition:transform .2s ease;flex:none;}
+  .combobox.open .combo-trigger .chev{transform:rotate(180deg);}
+  .combo-trigger:focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
+
+  .combo-panel{
+    position:absolute;top:calc(100% + 6px);left:0;right:0;
+    background:var(--panel);
+    border:1px solid var(--hairline);
+    border-radius:10px;
+    box-shadow:0 12px 28px rgba(0,0,0,.35);
+    max-height:320px;
+    overflow-y:auto;
+    padding:6px;
+    display:none;
+    z-index:20;
+  }
+  .combobox.open .combo-panel{display:block;}
+  .combo-search{
+    width:100%;
+    background:var(--panel-2);
+    border:1px solid var(--hairline);
+    border-radius:6px;
+    color:var(--text);
+    font-family:'Inter',sans-serif;
+    font-size:13.5px;
+    padding:8px 10px;
+    margin-bottom:6px;
+  }
+  .combo-search:focus-visible{outline:2px solid var(--gold);outline-offset:1px;}
+  .combo-option{
+    display:flex;align-items:center;gap:12px;
+    padding:9px 12px;
+    border-radius:6px;
+    cursor:pointer;
+    font-size:14.5px;
+  }
+  .combo-option:hover{background:var(--panel-2);}
+  .combo-option.selected{background:rgba(212,162,76,0.14);}
+  .combo-option .code{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;color:var(--muted);
+    width:24px;flex:none;
+  }
+  .combo-option .name{color:var(--text);font-weight:400;}
+  .combo-option.selected .name{color:var(--gold);font-weight:600;}
+  .combo-option.selected .code{color:var(--gold);}
+  .combo-empty{color:var(--muted);font-size:13.5px;padding:10px 12px;}
+
+  /* Result */
+  .placeholder{
+    border:1px dashed var(--hairline);
+    border-radius:var(--radius);
+    padding:50px 20px;
+    text-align:center;
+    color:var(--muted);
+    font-size:14px;
+  }
+  .result{display:none;}
+  .result.show{display:block;animation:rise .35s ease;}
+  @keyframes rise{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+
+  .state-head{
+    display:flex;align-items:center;gap:16px;
+    margin-bottom:22px;
+  }
+  .stamp{
+    width:56px;height:56px;border-radius:50%;
+    border:2px solid var(--gold);
+    display:flex;align-items:center;justify-content:center;
+    font-family:'IBM Plex Mono',monospace;
+    font-weight:600;font-size:15px;letter-spacing:.02em;
+    color:var(--gold);
+    transform:rotate(-6deg);
+    flex:none;
+    box-shadow:0 0 0 3px rgba(212,162,76,0.08);
+  }
+  .state-head h2{
+    font-family:'Fraunces',serif;font-weight:600;font-size:26px;margin:0;
+  }
+  .state-head .filing{
+    font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--muted);margin-top:4px;
+  }
+
+  .cards{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  @media(max-width:680px){.cards{grid-template-columns:1fr;}}
+  .card{
+    background:var(--panel);
+    border:1px solid var(--hairline);
+    border-radius:var(--radius);
+    padding:18px 20px;
+  }
+  .card .k{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--gold);
+    margin-bottom:10px;
+    display:block;
+  }
+  .card .agency{font-size:13px;color:var(--muted);margin-bottom:4px;}
+  .card .main{font-size:15.5px;font-weight:500;line-height:1.45;margin-bottom:10px;}
+  .card .fee{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:13.5px;color:var(--text);
+    background:var(--panel-2);
+    border-radius:6px;
+    padding:8px 10px;
+    display:inline-block;
+  }
+  .card .btn{
+    margin-top:12px;
+    display:inline-flex;align-items:center;gap:8px;
+    font-size:13.5px;font-weight:600;
+    color:var(--ink);
+    background:var(--teal);
+    border-bottom:none;
+    padding:9px 14px;border-radius:7px;
+  }
+  .card .btn:hover{filter:brightness(1.08);}
+  .card.excise .main{font-size:14.5px;font-weight:400;color:var(--text);}
+
+  .notes{margin-top:16px;}
+  .note-strip{
+    display:flex;gap:10px;
+    background:rgba(201,114,79,.08);
+    border:1px solid rgba(201,114,79,.3);
+    border-radius:8px;
+    padding:12px 14px;
+    font-size:13.5px;color:#e0b6a2;
+    margin-top:12px;
+  }
+  .note-strip .ico{color:var(--warn);flex:none;}
+
+  .checklist{
+    margin-top:16px;
+    background:var(--panel);
+    border:1px solid var(--hairline);
+    border-radius:var(--radius);
+    padding:18px 20px;
+  }
+  .checklist .k{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);
+    margin-bottom:12px;
+    display:block;
+  }
+  .checklist ul{margin:0;padding-left:20px;display:grid;gap:8px;}
+  .checklist li{font-size:14px;line-height:1.5;color:var(--text);}
+  .special{
+    margin-top:16px;
+    background:var(--panel);
+    border:1px solid var(--gold-dim);
+    border-radius:var(--radius);
+    padding:18px 20px;
+  }
+  .special .k{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);
+    display:block;margin-bottom:10px;
+  }
+  .special ol{margin:0;padding-left:20px;color:var(--text);font-size:14px;line-height:1.65;}
+  .special li{margin-bottom:8px;}
+  .special li:last-child{margin-bottom:0;}
+
+  footer{
+    margin-top:48px;
+    color:var(--muted);
+    font-size:12px;
+    text-align:center;
+    font-family:'IBM Plex Mono',monospace;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow">Token of Trust · Compliance Ops</div>
+    <h1>Vape / ENDS Registration Ledger</h1>
+    <p class="sub">Federal PACT Act filing plus state-by-state licensing, excise tax, and registration portals for e-liquid and ENDS shipments. Pick a state to pull its requirements.</p>
+  </header>
+
+  <div class="federal" id="federal">
+    <div class="federal-head" id="federalToggle" tabindex="0" role="button" aria-expanded="false">
+      <div class="tag"><span class="seal">Ⓕ</span> Federal PACT Act — applies to every state</div>
+      <span class="chev">▾</span>
+    </div>
+    <div class="federal-body">
+      <div class="federal-body-inner">
+        <div class="fed-grid">
+          <div>
+            <h3>General requirements</h3>
+            <ul>
+              <li>Register with ATF and the tobacco tax administrators of each state and/or locality into which shipments are made.</li>
+              <li>File monthly reports with the tobacco tax administrators of each state and/or locality shipped to in the previous calendar month.</li>
+              <li>Comply with state, local, and tribal licensing, regulatory, and tax laws.</li>
+              <li>Verify each jurisdiction's required forms and procedures directly — requirements can change.</li>
+            </ul>
+          </div>
+          <div>
+            <h3>Registering with ATF</h3>
+            <ul>
+              <li>Review the <a href="https://www.atf.gov/rules-and-regulations/pact-act" target="_blank" rel="noopener">PACT Act Information Guide</a>.</li>
+              <li>Complete <a href="https://www.atf.gov/firearms/docs/5070-1/pact-act-registration-form/download" target="_blank" rel="noopener">ATF Form 5070.1</a> (and continuation sheet ATF Form 5070.1A, if needed).</li>
+              <li>Email the form(s) to <a href="mailto:PACTActregistrationinbox@atf.gov">PACTActregistrationinbox@atf.gov</a>, or mail to the address at right.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="mailbox">Bureau of Alcohol, Tobacco, Firearms and Explosives
+99 New York Ave. NE
+c/o 90 K Street NE, Suite 250
+Washington, DC 20226</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="selector">
+    <label id="jurisdictionLabel">Jurisdiction</label>
+    <div class="combobox" id="combobox">
+      <button type="button" class="combo-trigger" id="comboTrigger" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="jurisdictionLabel">
+        <span id="comboTriggerText" class="placeholder-text">Select a state…</span>
+        <span class="chev">▾</span>
+      </button>
+      <div class="combo-panel" id="comboPanel" role="listbox" aria-labelledby="jurisdictionLabel">
+        <input type="text" class="combo-search" id="comboSearch" placeholder="Search states…" autocomplete="off">
+        <div id="comboOptions"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="placeholder" id="placeholder">Choose a state above to see its licensing, excise tax, and registration details.</div>
+
+  <div class="result" id="result">
+    <div class="state-head">
+      <div class="stamp" id="stampAbbr">—</div>
+      <div>
+        <h2 id="stateName">—</h2>
+        <div class="filing" id="stateFiling">—</div>
+      </div>
+    </div>
+
+    <div class="cards">
+      <div class="card license">
+        <span class="k">Licensing · PACT registration</span>
+        <div class="agency" id="pactAgency">—</div>
+        <div class="main" id="pactLicense">—</div>
+        <span class="fee" id="pactFee">—</span><br>
+        <a class="btn" id="pactPortal" href="#" target="_blank" rel="noopener">Open registration portal ↗</a>
+      </div>
+      <div class="card excise">
+        <span class="k">Excise tax</span>
+        <div class="agency" id="exciseAgency">—</div>
+        <div class="main" id="exciseTax">—</div>
+        <a class="btn" id="excisePortal" href="#" target="_blank" rel="noopener">Open tax portal ↗</a>
+      </div>
+    </div>
+
+    <div class="notes" id="notesWrap"></div>
+
+    <div class="checklist">
+      <span class="k">Compliance checklist</span>
+      <ul id="checklistList"></ul>
+    </div>
+
+    <div class="special" id="specialWrap" style="display:none;">
+      <span class="k">Extra PACT Act steps for this state</span>
+      <ol id="specialList"></ol>
+    </div>
+  </div>
+
+  <footer>Data compiled from state DOR / ABC sources · verify current forms and fees before filing</footer>
+</div>
+
+<script>
+const STATES = {
+  "Alabama": {
+    "pact_agency": "Alabama Alcoholic Beverage Control Board",
+    "pact_license": "Tobacco Permit or Specialty ENDS Retailer Permit",
+    "pact_fee": "$50 application fee; Specialty ENDS Permit ~$1,000/year",
+    "pact_portal": "https://alabcboard.gov/licensing-compliance",
+    "pact_portal_label": "Alabama ABC Licensing Portal",
+    "excise_agency": "Alabama Department of Revenue",
+    "excise_tax": "$0.10 per mL of consumable vape liquid",
+    "excise_portal": "https://myalabamataxes.alabama.gov/",
+    "excise_portal_label": "My Alabama Taxes (MAT)",
+    "filing": "Monthly excise filings",
+    "notes": []
+  },
+  "Alaska": {
+    "pact_agency": "Alaska Department of Commerce, Community, and Economic Development",
+    "pact_license": "Alaska Business License (local tobacco/vape endorsements may apply)",
+    "pact_fee": "~$50/year",
+    "pact_portal": "https://www.commerce.alaska.gov/web/cbpl/BusinessLicensing.aspx",
+    "pact_portal_label": "Alaska Business Licensing",
+    "excise_agency": "Alaska Department of Revenue",
+    "excise_tax": "No statewide vape excise tax. Local city/borough taxes apply, e.g. Anchorage 55% of wholesale price; Fairbanks North Star Borough 20% of wholesale price (nicotine products); Juneau City and Borough 45% of wholesale price; Matanuska-Susitna Borough 55% of wholesale price; Northwest Arctic Borough 45% of wholesale price.",
+    "excise_portal": "https://tax.alaska.gov/",
+    "excise_portal_label": "Alaska Revenue",
+    "filing": "Check local municipality rules; register locally if required",
+    "notes": []
+  },
+  "Arizona": {
+    "pact_agency": "Arizona Department of Revenue",
+    "pact_license": "Tobacco Distributor License (ENDS included under tobacco products)",
+    "pact_fee": "~$100\u2013$1,000 depending on license type",
+    "pact_portal": "https://azdor.gov/business/tobacco-tax",
+    "pact_portal_label": "Arizona Tobacco Licensing",
+    "excise_agency": "Arizona Department of Revenue",
+    "excise_tax": "Tobacco Products Tax applies to ENDS, based on wholesale price (not per mL)",
+    "excise_portal": "https://azdor.gov/business/tobacco-tax",
+    "excise_portal_label": "AZDOR TPT Portal",
+    "filing": "Monthly/quarterly tobacco tax filings; distributor reporting",
+    "notes": []
+  },
+  "Arkansas": {
+    "pact_agency": "Arkansas Department of Finance and Administration",
+    "pact_license": "Tobacco Products Distributor License",
+    "pact_fee": "~$50\u2013$500 depending on classification",
+    "pact_portal": "https://www.dfa.arkansas.gov/excise-tax/tobacco",
+    "pact_portal_label": "Arkansas Tobacco Licensing",
+    "excise_agency": "Arkansas Department of Finance and Administration",
+    "excise_tax": "Tobacco products tax applies to vape/ENDS, based on wholesale price",
+    "excise_portal": "https://www.dfa.arkansas.gov/excise-tax/tobacco",
+    "excise_portal_label": "Arkansas Tax Portal",
+    "filing": "Monthly tobacco tax reporting; distributor reporting required",
+    "notes": []
+  },
+  "California": {
+    "pact_agency": "California Department of Tax and Fee Administration (CDTFA)",
+    "pact_license": "Cigarette & Tobacco Products License",
+    "pact_fee": "~$100+",
+    "pact_portal": "https://www.cdtfa.ca.gov/taxes-and-fees/cigarette-and-tobacco-products.htm",
+    "pact_portal_label": "California CDTFA Licensing",
+    "excise_agency": "California CDTFA",
+    "excise_tax": "54.27% of wholesale cost on products with nicotine, plus 12.5% of retail selling price on products with nicotine",
+    "excise_portal": "https://www.cdtfa.ca.gov/taxes-and-fees/cigarette-and-tobacco-products.htm",
+    "excise_portal_label": "CDTFA Tobacco Products Tax",
+    "filing": "Monthly tobacco tax filings; distributor reporting required",
+    "notes": []
+  },
+  "Colorado": {
+    "pact_agency": "Colorado Department of Revenue",
+    "pact_license": "Tobacco Products Distributor License (includes vape/ENDS)",
+    "pact_fee": "~$50\u2013$300 depending on license type",
+    "pact_portal": "https://tax.colorado.gov/tobacco-products",
+    "pact_portal_label": "Colorado Tobacco Licensing",
+    "excise_agency": "Colorado Department of Revenue",
+    "excise_tax": "56% of wholesale cost for products with nicotine",
+    "excise_portal": "https://www.colorado.gov/revenueonline/",
+    "excise_portal_label": "Colorado Revenue Online",
+    "filing": "Monthly tobacco tax filings; distributor reporting required",
+    "notes": []
+  },
+  "Connecticut": {
+    "pact_agency": "Connecticut Department of Revenue Services",
+    "pact_license": "Tobacco Products Distributor License",
+    "pact_fee": "~$100\u2013$500 depending on classification",
+    "pact_portal": "https://portal.ct.gov/drs/tobacco",
+    "pact_portal_label": "Connecticut Tobacco Tax",
+    "excise_agency": "Connecticut Department of Revenue Services",
+    "excise_tax": "$0.40/mL for closed-system products (pods, cartridges, disposables); 10% of wholesale price for open-system products (refillable e-liquid, devices)",
+    "excise_portal": "https://portal.ct.gov/drs",
+    "excise_portal_label": "CT DRS Online Services",
+    "filing": "Monthly tobacco tax filings; distributor reporting required",
+    "notes": []
+  },
+  "Delaware": {
+    "pact_agency": "Delaware Division of Revenue",
+    "pact_license": "Tobacco Product Distributor License",
+    "pact_fee": "~$50\u2013$200 depending on registration type",
+    "pact_portal": "https://revenue.delaware.gov/business/tobacco-tax/",
+    "pact_portal_label": "Delaware Tobacco Tax",
+    "excise_agency": "Delaware Division of Revenue",
+    "excise_tax": "$0.05 per mL on products with nicotine",
+    "excise_portal": "https://revenue.delaware.gov/",
+    "excise_portal_label": "Delaware Tax Portal",
+    "filing": "Monthly tobacco tax filings; distributor reporting required",
+    "notes": []
+  },
+  "Florida": {
+    "pact_agency": "Florida Department of Business and Professional Regulation",
+    "pact_license": "Tobacco Wholesale Dealer Permit (covers vape/ENDS)",
+    "pact_fee": "~$50\u2013$200 annually",
+    "pact_portal": "https://www.myfloridalicense.com/DBPR/tobacco-products/",
+    "pact_portal_label": "Florida Tobacco Licensing",
+    "excise_agency": "Florida Department of Revenue",
+    "excise_tax": "Tobacco tax applies to ENDS, based on wholesale price",
+    "excise_portal": "https://floridarevenue.com/",
+    "excise_portal_label": "Florida Revenue Online",
+    "filing": "Monthly tobacco tax filings; distributor reporting required",
+    "notes": []
+  },
+  "Georgia": {
+    "pact_agency": "Georgia Department of Revenue",
+    "pact_license": "Tobacco Distributor License (covers vape/ENDS)",
+    "pact_fee": "~$10\u2013$100 (varies by license type)",
+    "pact_portal": "https://dor.georgia.gov/taxes/tobacco-tax",
+    "pact_portal_label": "Georgia Tobacco Tax Registration",
+    "excise_agency": "Georgia Department of Revenue",
+    "excise_tax": "5\u00a2 per fluid mL for closed-system consumable vapor products; 7% of wholesale cost for open-system consumable vapor products; 7% of wholesale cost for single-use vapor devices",
+    "excise_portal": "https://gtc.dor.ga.gov/",
+    "excise_portal_label": "Georgia Tax Center",
+    "filing": "Monthly tobacco tax filings; distributor reporting required",
+    "notes": []
+  },
+  "Hawaii": {
+    "pact_agency": "Hawaii Department of Taxation",
+    "pact_license": "Tobacco Distributor License",
+    "pact_fee": "~$20\u2013$100 annually",
+    "pact_portal": "https://tax.hawaii.gov/tax/tobacco/",
+    "pact_portal_label": "Hawaii Tobacco Tax",
+    "excise_agency": "Hawaii Department of Taxation",
+    "excise_tax": "70% of the wholesale price",
+    "excise_portal": "https://tax.hawaii.gov/eservices/",
+    "excise_portal_label": "Hawaii Tax Online",
+    "filing": "Monthly/quarterly tobacco filings; distributor reporting required",
+    "notes": [
+      "Hawaii has one of the strictest vape regulations in the US; some flavored vape restrictions apply."
+    ]
+  },
+  "Idaho": {
+    "pact_agency": "Idaho State Tax Commission",
+    "pact_license": "Tobacco Distributor License (includes vape/ENDS)",
+    "pact_fee": "~$30\u2013$100 annually",
+    "pact_portal": "https://tax.idaho.gov/taxes/tobacco/",
+    "pact_portal_label": "Idaho Tobacco Tax",
+    "excise_agency": "Idaho State Tax Commission",
+    "excise_tax": "Tobacco products tax applies, based on wholesale price",
+    "excise_portal": "https://tax.idaho.gov/",
+    "excise_portal_label": "Idaho TAP Portal",
+    "filing": "Monthly tobacco tax filings; distributor reporting required",
+    "notes": []
+  },
+  "Illinois": {
+    "pact_agency": "Illinois Department of Revenue",
+    "pact_license": "Tobacco Products Distributor License",
+    "pact_fee": "~$50\u2013$500 depending on license class",
+    "pact_portal": "https://tax.illinois.gov/businesses/tobacco.html",
+    "pact_portal_label": "Illinois Tobacco Tax",
+    "excise_agency": "Illinois Department of Revenue",
+    "excise_tax": "45% of wholesale cost statewide. Local add-ons: Cook County $0.20 per mL of liquid; Chicago $1.50 per unit (device/pod/bottle) plus $1.20 per mL of liquid",
+    "excise_portal": "https://mytax.illinois.gov/",
+    "excise_portal_label": "MyTax Illinois",
+    "filing": "Monthly tobacco tax filings; distributor reporting required",
+    "notes": [
+      "Illinois has additional local city vape taxes (e.g., Chicago). Register state + local tax accounts if applicable."
+    ]
+  },
+  "Indiana": {
+    "pact_agency": "Indiana Department of Revenue",
+    "pact_license": "Tobacco Distributor License (covers vape/ENDS)",
+    "pact_fee": "~$25\u2013$100 annually",
+    "pact_portal": "https://www.in.gov/dor/business-tax/tobacco-tax/",
+    "pact_portal_label": "Indiana Tobacco Tax",
+    "excise_agency": "Indiana Department of Revenue",
+    "excise_tax": "30% of wholesale cost for closed cartridge/closed single-use products; 30% of retail price for other product types",
+    "excise_portal": "https://intime.dor.in.gov/",
+    "excise_portal_label": "Indiana INTIME Portal",
+    "filing": "Monthly tobacco tax filings; distributor reporting required",
+    "notes": []
+  },
+  "Iowa": {
+    "pact_agency": "Iowa Department of Revenue",
+    "pact_license": "Tobacco Distributor Permit (includes vape/ENDS)",
+    "pact_fee": "~$10\u2013$100 annually",
+    "pact_portal": "https://tax.iowa.gov/tobacco",
+    "pact_portal_label": "Iowa Tobacco Tax",
+    "excise_agency": "Iowa Department of Revenue",
+    "excise_tax": "Tobacco tax applies to vape/ENDS, based on wholesale price",
+    "excise_portal": "https://tax.iowa.gov/GovConnectIowa",
+    "excise_portal_label": "Iowa GovConnect",
+    "filing": "Monthly/quarterly filings; distributor reporting required",
+    "notes": [
+      "Iowa enforces strict age verification and retail compliance."
+    ]
+  },
+  "Kansas": {
+    "pact_agency": "Kansas Department of Revenue",
+    "pact_license": "Tobacco Distributor License",
+    "pact_fee": "~$20\u2013$100 annually",
+    "pact_portal": "https://www.ksrevenue.gov/businesstaxes.html",
+    "pact_portal_label": "Kansas Tobacco Tax",
+    "excise_agency": "Kansas Department of Revenue",
+    "excise_tax": "$0.05 per mL",
+    "excise_portal": "https://www.kdor.ks.gov/",
+    "excise_portal_label": "Kansas Customer Service Center",
+    "filing": "Monthly tobacco tax filings; distributor reporting required",
+    "notes": []
+  },
+  "Kentucky": {
+    "pact_agency": "Kentucky Department of Revenue",
+    "pact_license": "Tobacco Products Distributor License",
+    "pact_fee": "~$50\u2013$200 annually",
+    "pact_portal": "https://revenue.ky.gov/Business/Tobacco-Tax/Pages/default.aspx",
+    "pact_portal_label": "Kentucky Tobacco Tax",
+    "excise_agency": "Kentucky Department of Revenue",
+    "excise_tax": "15% of wholesale price for open vaping products; $1.50 per unit for closed vaping products",
+    "excise_portal": "https://revenue.ky.gov/",
+    "excise_portal_label": "Kentucky Revenue Portal",
+    "filing": "Monthly tobacco tax filings; distributor reporting required",
+    "notes": [
+      "Kentucky has strong enforcement on tobacco/vape distribution compliance."
+    ]
+  },
+  "Louisiana": {
+    "pact_agency": "Louisiana Department of Revenue",
+    "pact_license": "Tobacco Distributor License (includes vape/ENDS)",
+    "pact_fee": "~$25\u2013$100 annually (varies by classification)",
+    "pact_portal": "https://revenue.louisiana.gov/TaxTypes/TobaccoTax",
+    "pact_portal_label": "Louisiana Tobacco Tax",
+    "excise_agency": "Louisiana Department of Revenue",
+    "excise_tax": "$0.15 per mL on products with nicotine",
+    "excise_portal": "https://latap.revenue.louisiana.gov/",
+    "excise_portal_label": "Louisiana Tax Portal",
+    "filing": "Monthly tobacco tax filings; distributor reporting required",
+    "notes": [
+      "Louisiana has strong enforcement on shipping tobacco/ENDS products."
+    ]
+  },
+  "Maine": {
+    "pact_agency": "Maine Revenue Services",
+    "pact_license": "Tobacco Distributor License",
+    "pact_fee": "~$25\u2013$100 annually",
+    "pact_portal": "https://www.maine.gov/revenue/taxes/tobacco",
+    "pact_portal_label": "Maine Tobacco Tax",
+    "excise_agency": "Maine Revenue Services",
+    "excise_tax": "75% of wholesale cost",
+    "excise_portal": "https://www.maine.gov/revenue/",
+    "excise_portal_label": "Maine Revenue Portal",
+    "filing": "Monthly tobacco tax filings; distributor reporting required",
+    "notes": [
+      "Maine has strict vape flavor restrictions in retail environments."
+    ]
+  },
+  "Maryland": {
+    "pact_agency": "Maryland Comptroller",
+    "pact_license": "Tobacco License (includes vape/ENDS)",
+    "pact_fee": "~$30\u2013$300 annually",
+    "pact_portal": "https://www.marylandtaxes.gov/business/tobacco.php",
+    "pact_portal_label": "Maryland Tobacco Tax",
+    "excise_agency": "Maryland Comptroller of Maryland",
+    "excise_tax": "20% of retail price for ESDs (devices and larger liquid containers); 60% of retail price for vaping liquid in containers 5 mL or less. Montgomery County: 30% of wholesale price.",
+    "excise_portal": "https://www.marylandtaxes.gov/business/tax-business/tobacco-fireworks-registration.php",
+    "excise_portal_label": "Maryland Tax Connect",
+    "filing": "Monthly/quarterly filings; distributor reporting required",
+    "notes": [
+      "Maryland enforces strict retail + online vape compliance rules."
+    ],
+    "special": [
+      "Send a copy of your completed ATF Form 5070.1 to the Comptroller of Maryland, Revenue Administration Division, Attn: ATM Unit, P.O. Box 2999, Annapolis, MD 21404-2999, or email PACTREPORT@marylandtaxes.gov.",
+      "Download and complete the Maryland Combined Registration Application (CRA), filling out the tobacco-specific questions in Section C (Cigarette Wholesaler, Other Tobacco Products Wholesaler, or Remote Seller).",
+      "Mail the completed CRA to: Comptroller of Maryland, Revenue Administration Center, 110 Carroll Street, Annapolis, Maryland 21411-0001.",
+      "Set up an account on the Maryland Tax Connect Portal and link your approved tobacco tax license to your login profile."
+    ]
+  },
+  "Massachusetts": {
+    "pact_agency": "Massachusetts Department of Revenue",
+    "pact_license": "Tobacco Distributor License",
+    "pact_fee": "~$100\u2013$500 annually",
+    "pact_portal": "https://www.mass.gov/tobacco-tax",
+    "pact_portal_label": "Massachusetts Tobacco Tax",
+    "excise_agency": "Massachusetts Department of Revenue",
+    "excise_tax": "75% of wholesale cost",
+    "excise_portal": "https://mtc.dor.state.ma.us/mtc/_/",
+    "excise_portal_label": "MassTax Connect",
+    "filing": "Monthly tobacco tax filings; distributor reporting required",
+    "notes": [
+      "Massachusetts has one of the strictest vape flavor bans in the US."
+    ],
+    "special": [
+      "Download and complete state-specific Form CT-PAR (PACT Act Registration Form) and attach a copy of your completed federal ATF Form 5070.1. No fee required.",
+      "The Massachusetts Tobacco Tax Administrator (MTTA) prefers digital submissions to matobaccoexcise@dor.state.ma.us.",
+      "On MassTaxConnect: new users choose \"Register a New Taxpayer\" under Quick Links, then \"Register a New Business.\" Existing users log in, select \"More,\" then \"Add an Account\" or \"Add a License,\" and add the cigarette, cigar, or vaping/ENDS tax account matching your business operations \u2014 this activates the license application on your dashboard."
+    ]
+  },
+  "Michigan": {
+    "pact_agency": "Michigan Department of Treasury",
+    "pact_license": "Tobacco Products Distributor License (covers vape/ENDS)",
+    "pact_fee": "~$50\u2013$200 annually",
+    "pact_portal": "https://www.michigan.gov/taxes/business/tobacco",
+    "pact_portal_label": "Michigan Tobacco Tax",
+    "excise_agency": "Michigan Department of Treasury",
+    "excise_tax": "Tobacco products tax applies to ENDS, based on wholesale price",
+    "excise_portal": "https://mto.treasury.michigan.gov/",
+    "excise_portal_label": "Michigan Treasury Online (MTO)",
+    "filing": "Monthly tobacco tax filings; distributor reporting required",
+    "notes": [
+      "Michigan has strict enforcement on flavored vape products (state-level restrictions apply)."
+    ]
+  },
+  "Minnesota": {
+    "pact_agency": "Minnesota Department of Revenue",
+    "pact_license": "Tobacco Products Distributor License",
+    "pact_fee": "~$20\u2013$100 annually",
+    "pact_portal": "https://www.revenue.state.mn.us/tobacco-tax",
+    "pact_portal_label": "Minnesota Tobacco Tax",
+    "excise_agency": "Minnesota Department of Revenue",
+    "excise_tax": "95% of wholesale sales price",
+    "excise_portal": "https://www.mndor.state.mn.us/tp/eservices/_/",
+    "excise_portal_label": "Minnesota e-Services",
+    "filing": "Monthly/quarterly filings; distributor reporting required",
+    "notes": [
+      "Minnesota has additional local tobacco licensing rules in some cities."
+    ]
+  },
+  "Mississippi": {
+    "pact_agency": "Mississippi Department of Revenue",
+    "pact_license": "Sales Tax Permit and Tobacco Permit",
+    "pact_fee": "Retail tobacco permit: no fee; Wholesale tobacco permit: $100/year",
+    "pact_portal": "https://www.dor.ms.gov/business/tobacco-tax",
+    "pact_portal_label": "Mississippi Tobacco Tax",
+    "excise_agency": "Mississippi Department of Revenue",
+    "excise_tax": "Tobacco products tax applies, based on wholesale price",
+    "excise_portal": "https://tap.dor.ms.gov/",
+    "excise_portal_label": "Mississippi TAP Portal",
+    "filing": "Monthly tobacco tax filings; distributor reporting required",
+    "notes": [
+      "Mississippi has relatively lower taxes but strict enforcement on unlicensed sales."
+    ],
+    "special": [
+      "Secure both a Sales Tax Permit and a Tobacco Permit through the Mississippi DOR Taxpayer Access Point (TAP) Portal.",
+      "Submit a copy of your completed federal ATF Form 5070.1 to tobacco@dor.ms.gov."
+    ]
+  },
+  "Missouri": {
+    "pact_agency": "Missouri Department of Revenue",
+    "pact_license": "Retail Sales Tax License (retailers) or Cigarette/OTP Wholesaler License via Form 2175 (wholesalers)",
+    "pact_fee": "~$25\u2013$100 annually; wholesaler license $100",
+    "pact_portal": "https://dor.mo.gov/taxation/business/tobacco.html",
+    "pact_portal_label": "Missouri Tobacco Tax",
+    "excise_agency": "Missouri Department of Revenue",
+    "excise_tax": "Tobacco products tax applies, based on wholesale price",
+    "excise_portal": "https://dors.mo.gov/",
+    "excise_portal_label": "Missouri Online Business Portal",
+    "filing": "Monthly tobacco tax filings; distributor reporting required",
+    "notes": [
+      "Missouri is generally more permissive but still requires strict tax compliance."
+    ],
+    "special": [
+      "Retailers: standard Missouri Retail Sales Tax License. Wholesalers: file Form 2175 (Missouri Cigarette or Other Tobacco Products Tax License Application), $100 fee.",
+      "Mail a copy of ATF Form 5070.1 to Missouri DOR Taxation Division, P.O. Box 811, Jefferson City, MO 65105-0811, or email DOR.tobacco@dor.mo.gov.",
+      "Also send a digital copy to the Missouri Attorney General's Office at tobacco.pactact@ago.mo.gov, or mail to P.O. Box 899, Jefferson City, MO 65102-0899."
+    ]
+  },
+  "Montana": {
+    "pact_agency": "Montana Department of Revenue",
+    "pact_license": "Tobacco Products Distributor License (covers vape/ENDS)",
+    "pact_fee": "~$30\u2013$100 annually",
+    "pact_portal": "https://mtrevenue.gov/taxes/tobacco/",
+    "pact_portal_label": "Montana Tobacco Tax",
+    "excise_agency": "Montana Department of Revenue",
+    "excise_tax": "Tobacco products tax applies to ENDS, based on wholesale price",
+    "excise_portal": "https://tap.dor.mt.gov/",
+    "excise_portal_label": "Montana TransAction Portal",
+    "filing": "Monthly/quarterly tobacco tax filings; distributor reporting required",
+    "notes": [
+      "Montana has no major statewide vape flavor bans, but enforcement varies locally."
+    ]
+  },
+  "Nebraska": {
+    "pact_agency": "Nebraska Department of Revenue",
+    "pact_license": "Tobacco Products Distributor License",
+    "pact_fee": "~$25\u2013$75 annually",
+    "pact_portal": "https://revenue.nebraska.gov/business/tobacco",
+    "pact_portal_label": "Nebraska Tobacco Tax",
+    "excise_agency": "Nebraska Department of Revenue",
+    "excise_tax": "$0.05 per mL on products with nicotine and \u22643mL; 10% of wholesale price on products with nicotine and >3mL",
+    "excise_portal": "https://revenue.nebraska.gov/businesses/revenue-online",
+    "excise_portal_label": "Nebraska Revenue Online",
+    "filing": "Monthly tobacco tax filings; distributor reporting required",
+    "notes": [
+      "Nebraska has strict enforcement on unlicensed tobacco distribution."
+    ]
+  },
+  "Nevada": {
+    "pact_agency": "Nevada Department of Taxation",
+    "pact_license": "Tobacco Distributor License (includes vape/ENDS)",
+    "pact_fee": "~$50\u2013$200 annually",
+    "pact_portal": "https://tax.nv.gov/Business/Tobacco/",
+    "pact_portal_label": "Nevada Tobacco Tax",
+    "excise_agency": "Nevada Department of Taxation",
+    "excise_tax": "30% of wholesale price",
+    "excise_portal": "https://www.nevadatax.nv.gov/",
+    "excise_portal_label": "Nevada Tax Center",
+    "filing": "Monthly tobacco tax filings; distributor reporting required",
+    "notes": [
+      "Nevada has additional Clark County-specific tobacco regulations (Las Vegas area)."
+    ]
+  },
+  "New Hampshire": {
+    "pact_agency": "New Hampshire Department of Revenue Administration",
+    "pact_license": "Tobacco Distributor License",
+    "pact_fee": "~$30\u2013$100 annually",
+    "pact_portal": "https://www.revenue.nh.gov/taxes/tobacco.htm",
+    "pact_portal_label": "New Hampshire Tobacco Tax",
+    "excise_agency": "New Hampshire Department of Revenue Administration",
+    "excise_tax": "$0.30 per mL (closed system); 8% of wholesale sales price (open system)",
+    "excise_portal": "https://gtc.revenue.nh.gov/",
+    "excise_portal_label": "NH Granite Tax Connect",
+    "filing": "Monthly tobacco tax filings; distributor reporting required",
+    "notes": [
+      "New Hampshire has relatively low tax burden but strict reporting requirements."
+    ]
+  },
+  "New Jersey": {
+    "pact_agency": "New Jersey Division of Taxation",
+    "pact_license": "Cigarette Tax Distributor License (includes vape/ENDS as tobacco products)",
+    "pact_fee": "~$50\u2013$200 annually (varies by license type)",
+    "pact_portal": "https://www.nj.gov/treasury/taxation/cigarette.shtml",
+    "pact_portal_label": "New Jersey Tobacco Tax",
+    "excise_agency": "New Jersey Division of Taxation",
+    "excise_tax": "$0.30 per mL on products with nicotine; 30% of retail sales price",
+    "excise_portal": "https://www.state.nj.us/treasury/taxation/online.shtml",
+    "excise_portal_label": "New Jersey Online Tax Filing",
+    "filing": "Monthly tobacco tax filings; distributor reporting required",
+    "notes": [
+      "New Jersey has strict enforcement and high vape taxation compared to many states."
+    ]
+  },
+  "New Mexico": {
+    "pact_agency": "New Mexico Taxation and Revenue Department",
+    "pact_license": "Tobacco Products Distributor License",
+    "pact_fee": "~$25\u2013$100 annually",
+    "pact_portal": "https://www.tax.newmexico.gov/businesses/tobacco-products-tax/",
+    "pact_portal_label": "New Mexico Tobacco Tax",
+    "excise_agency": "New Mexico Taxation and Revenue Department",
+    "excise_tax": "12.5% of product value on all e-liquid; $0.50 per closed-system cartridge (single-use, pre-filled, \u22645 mL)",
+    "excise_portal": "https://tap.state.nm.us/",
+    "excise_portal_label": "New Mexico Taxpayer Access Point",
+    "filing": "Monthly tobacco tax filings; distributor reporting required",
+    "notes": [
+      "New Mexico enforces strict reporting for tobacco and vape distribution."
+    ]
+  },
+  "New York": {
+    "pact_agency": "New York State Department of Taxation and Finance",
+    "pact_license": "Tobacco Products Distributor License",
+    "pact_fee": "~$100\u2013$1,000 depending on license type",
+    "pact_portal": "https://www.tax.ny.gov/bus/stc/index.htm",
+    "pact_portal_label": "New York Tobacco Tax",
+    "excise_agency": "New York State Department of Taxation and Finance",
+    "excise_tax": "20% of retail price of all vapor products",
+    "excise_portal": "https://www.tax.ny.gov/online/",
+    "excise_portal_label": "New York Online Services",
+    "filing": "Monthly tobacco tax filings; distributor reporting required",
+    "notes": [
+      "New York has one of the strictest vape regulatory environments in the US (flavor bans + high enforcement)."
+    ]
+  },
+  "North Carolina": {
+    "pact_agency": "North Carolina Department of Revenue",
+    "pact_license": "Tobacco Products Distributor License (covers vape/ENDS)",
+    "pact_fee": "~$30\u2013$150 annually",
+    "pact_portal": "https://www.ncdor.gov/taxes-forms/tobacco-products-tax",
+    "pact_portal_label": "North Carolina Tobacco Tax",
+    "excise_agency": "North Carolina Department of Revenue",
+    "excise_tax": "$0.05 per mL on products with nicotine",
+    "excise_portal": "https://eservices.dor.nc.gov/",
+    "excise_portal_label": "North Carolina eServices",
+    "filing": "Monthly tobacco tax filings; distributor reporting required",
+    "notes": [
+      "North Carolina is a major tobacco state with strict distributor compliance requirements."
+    ]
+  },
+  "North Dakota": {
+    "pact_agency": "North Dakota Office of State Tax Commissioner",
+    "pact_license": "Tobacco Distributor License (includes vape/ENDS)",
+    "pact_fee": "~$25\u2013$100 annually",
+    "pact_portal": "https://www.tax.nd.gov/business/tobacco-tax",
+    "pact_portal_label": "North Dakota Tobacco Tax",
+    "excise_agency": "North Dakota Office of State Tax Commissioner",
+    "excise_tax": "Tobacco products tax applies, based on wholesale price",
+    "excise_portal": "https://apps.nd.gov/tax/tap/_/",
+    "excise_portal_label": "North Dakota TAP Portal",
+    "filing": "Monthly tobacco tax filings; distributor reporting required",
+    "notes": []
+  },
+  "Ohio": {
+    "pact_agency": "Ohio Department of Taxation",
+    "pact_license": "Tobacco Distributor License (covers vape/ENDS)",
+    "pact_fee": "~$125\u2013$1,000 depending on classification",
+    "pact_portal": "https://tax.ohio.gov/business/ohio-business-taxes/excise/tobacco",
+    "pact_portal_label": "Ohio Tobacco Tax",
+    "excise_agency": "Ohio Department of Taxation",
+    "excise_tax": "$0.10 per mL on products with nicotine",
+    "excise_portal": "https://ohiobusinessgateway.ohio.gov/",
+    "excise_portal_label": "Ohio Business Gateway",
+    "filing": "Monthly tobacco tax filings; distributor reporting required",
+    "notes": [
+      "Ohio requires strong distributor recordkeeping for vape shipments."
+    ]
+  },
+  "Oklahoma": {
+    "pact_agency": "Oklahoma Tax Commission",
+    "pact_license": "Sales Tax Permit and Retail Cigarette and Tobacco License",
+    "pact_fee": "$30 for three years (retail); ~$30\u2013$100 annually overall",
+    "pact_portal": "https://oklahoma.gov/tax/businesses/tobacco-tax.html",
+    "pact_portal_label": "Oklahoma Tobacco Tax",
+    "excise_agency": "Oklahoma Tax Commission",
+    "excise_tax": "Tobacco products tax applies, based on wholesale price",
+    "excise_portal": "https://oktap.tax.ok.gov/",
+    "excise_portal_label": "Oklahoma Taxpayer Access Point (OkTAP)",
+    "filing": "Monthly tobacco tax filings; distributor reporting required",
+    "notes": [
+      "Oklahoma actively audits tobacco/vape distributors."
+    ],
+    "special": [
+      "Register your business and secure a Sales Tax Permit and Retail Cigarette and Tobacco License ($30 for three years) through the OkTAP Portal.",
+      "Submit a copy of ATF Form 5070.1 to the Oklahoma Tax Commission's Alcohol and Tobacco Tax Division to link it to your state tax profile.",
+      "Also submit a copy to the Tobacco Enforcement Unit of the Oklahoma Attorney General's Office (OAG)."
+    ]
+  },
+  "Oregon": {
+    "pact_agency": "Oregon Department of Revenue",
+    "pact_license": "Tobacco Distributor License (includes vape/ENDS)",
+    "pact_fee": "~$50\u2013$250 annually",
+    "pact_portal": "https://www.oregon.gov/dor/programs/businesses/pages/tobacco.aspx",
+    "pact_portal_label": "Oregon Tobacco Tax",
+    "excise_agency": "Oregon Department of Revenue",
+    "excise_tax": "65% of wholesale cost",
+    "excise_portal": "https://revenueonline.dor.oregon.gov/",
+    "excise_portal_label": "Oregon Revenue Online",
+    "filing": "Monthly tobacco tax filings; distributor reporting required",
+    "notes": [
+      "Oregon has strict vape flavor restrictions and strong online sales enforcement."
+    ]
+  },
+  "Pennsylvania": {
+    "pact_agency": "Pennsylvania Department of Revenue",
+    "pact_license": "Tobacco Products Dealer/Distributor License (covers vape/ENDS)",
+    "pact_fee": "~$25\u2013$300 annually depending on classification",
+    "pact_portal": "https://www.revenue.pa.gov/TaxTypes/TobaccoProducts/Pages/default.aspx",
+    "pact_portal_label": "Pennsylvania Tobacco Products Tax",
+    "excise_agency": "Pennsylvania Department of Revenue",
+    "excise_tax": "40% of the purchase price from the wholesaler",
+    "excise_portal": "https://mypath.pa.gov/",
+    "excise_portal_label": "Pennsylvania myPATH",
+    "filing": "Monthly tobacco tax filings; distributor reporting required",
+    "notes": [
+      "Pennsylvania has one of the highest vape wholesale taxes in the US."
+    ]
+  },
+  "Rhode Island": {
+    "pact_agency": "Rhode Island Division of Taxation",
+    "pact_license": "Tobacco Distributor License",
+    "pact_fee": "~$25\u2013$150 annually",
+    "pact_portal": "https://tax.ri.gov/tax-sections/excise-taxes/tobacco-tax",
+    "pact_portal_label": "Rhode Island Tobacco Tax",
+    "excise_agency": "Rhode Island Division of Taxation",
+    "excise_tax": "$0.50 per mL on closed-system products with nicotine; 10% of wholesale price on open-system products with nicotine",
+    "excise_portal": "https://taxportal.ri.gov/",
+    "excise_portal_label": "Rhode Island Tax Portal",
+    "filing": "Monthly tobacco tax filings; distributor reporting required",
+    "notes": [
+      "Rhode Island has strict flavored vape restrictions."
+    ]
+  },
+  "South Carolina": {
+    "pact_agency": "South Carolina Department of Revenue",
+    "pact_license": "Tobacco Distributor License (includes vape/ENDS)",
+    "pact_fee": "~$25\u2013$100 annually",
+    "pact_portal": "https://dor.sc.gov/tax/tobacco",
+    "pact_portal_label": "South Carolina Tobacco Tax",
+    "excise_agency": "South Carolina Department of Revenue",
+    "excise_tax": "Tobacco products tax applies, based on wholesale price",
+    "excise_portal": "https://mydorway.dor.sc.gov/",
+    "excise_portal_label": "South Carolina MyDORWAY",
+    "filing": "Monthly tobacco tax filings; distributor reporting required",
+    "notes": [
+      "South Carolina has active enforcement on remote tobacco/vape sellers."
+    ]
+  },
+  "South Dakota": {
+    "pact_agency": "South Dakota Department of Revenue",
+    "pact_license": "Tobacco Distributor License",
+    "pact_fee": "~$20\u2013$100 annually",
+    "pact_portal": "https://dor.sd.gov/businesses/taxes/tobacco-other-taxes/",
+    "pact_portal_label": "South Dakota Tobacco Tax",
+    "excise_agency": "South Dakota Department of Revenue",
+    "excise_tax": "Tobacco products tax applies to ENDS, based on wholesale price",
+    "excise_portal": "https://epath.sd.gov/",
+    "excise_portal_label": "South Dakota ePath",
+    "filing": "Monthly/quarterly filings; distributor reporting required",
+    "notes": []
+  },
+  "Tennessee": {
+    "pact_agency": "Tennessee Department of Revenue",
+    "pact_license": "Tobacco Distributor License (covers vape/ENDS)",
+    "pact_fee": "~$50\u2013$300 annually",
+    "pact_portal": "https://www.tn.gov/revenue/taxes/tobacco-tax.html",
+    "pact_portal_label": "Tennessee Tobacco Tax",
+    "excise_agency": "Tennessee Department of Revenue",
+    "excise_tax": "10% of wholesale cost",
+    "excise_portal": "https://tntap.tn.gov/eservices/_/",
+    "excise_portal_label": "Tennessee Taxpayer Access Point (TNTAP)",
+    "filing": "Monthly tobacco tax filings; distributor reporting required",
+    "notes": [
+      "Tennessee has strict enforcement on shipping tobacco/ENDS into the state."
+    ]
+  },
+  "Texas": {
+    "pact_agency": "Texas Comptroller of Public Accounts",
+    "pact_license": "Cigarette/Tobacco Distributor Permit (covers vape/ENDS)",
+    "pact_fee": "~$180\u2013$300 annually",
+    "pact_portal": "https://comptroller.texas.gov/taxes/tobacco/",
+    "pact_portal_label": "Texas Tobacco Tax",
+    "excise_agency": "Texas Comptroller of Public Accounts",
+    "excise_tax": "Tobacco products tax applies, based on wholesale price",
+    "excise_portal": "https://comptroller.texas.gov/taxes/webfile/",
+    "excise_portal_label": "Texas WebFile",
+    "filing": "Monthly tobacco tax filings; distributor reporting required",
+    "notes": [
+      "Texas actively enforces PACT + vape shipping compliance."
+    ]
+  },
+  "Utah": {
+    "pact_agency": "Utah State Tax Commission",
+    "pact_license": "Tobacco Products Distributor License",
+    "pact_fee": "~$30\u2013$150 annually",
+    "pact_portal": "https://tax.utah.gov/tobacco",
+    "pact_portal_label": "Utah Tobacco Tax",
+    "excise_agency": "Utah State Tax Commission",
+    "excise_tax": "56% of the manufacturer's sales price",
+    "excise_portal": "https://tap.tax.utah.gov/",
+    "excise_portal_label": "Utah TAP Portal",
+    "filing": "Monthly tobacco tax filings; distributor reporting required",
+    "notes": [
+      "Utah has strict flavor restrictions and nicotine regulations."
+    ]
+  },
+  "Vermont": {
+    "pact_agency": "Vermont Department of Taxes",
+    "pact_license": "Tobacco Distributor License (includes vape/ENDS)",
+    "pact_fee": "~$20\u2013$100 annually",
+    "pact_portal": "https://tax.vermont.gov/business-and-corp/tobacco-tax",
+    "pact_portal_label": "Vermont Tobacco Tax",
+    "excise_agency": "Vermont Department of Taxes",
+    "excise_tax": "92% of wholesale price",
+    "excise_portal": "https://myvtax.vermont.gov/",
+    "excise_portal_label": "Vermont Tax Online",
+    "filing": "Monthly/quarterly filings; distributor reporting required",
+    "notes": [
+      "Vermont has strict vape flavor restrictions and strong enforcement."
+    ]
+  },
+  "Virginia": {
+    "pact_agency": "Virginia Department of Taxation",
+    "pact_license": "Tobacco Products Distributor License (covers vape/ENDS)",
+    "pact_fee": "~$30\u2013$100 annually",
+    "pact_portal": "https://www.tax.virginia.gov/tobacco-tax",
+    "pact_portal_label": "Virginia Tobacco Tax",
+    "excise_agency": "Virginia Department of Taxation",
+    "excise_tax": "$0.11 per mL on products with nicotine",
+    "excise_portal": "https://www.tax.virginia.gov/",
+    "excise_portal_label": "Virginia Tax Online Services",
+    "filing": "Monthly tobacco tax filings; distributor reporting required",
+    "notes": [
+      "Virginia enforces strict licensing for online tobacco/vape shipments into the state."
+    ]
+  },
+  "Washington": {
+    "pact_agency": "Washington Department of Revenue",
+    "pact_license": "Tobacco Products Distributor License (covers vape/ENDS)",
+    "pact_fee": "~$50\u2013$250 annually",
+    "pact_portal": "https://dor.wa.gov/taxes-rates/tobacco",
+    "pact_portal_label": "Washington Tobacco Tax",
+    "excise_agency": "Washington Department of Revenue",
+    "excise_tax": "95% of selling price for products with nicotine",
+    "excise_portal": "https://dor.wa.gov/manage-business/mydor-online-services",
+    "excise_portal_label": "Washington My DOR",
+    "filing": "Monthly tobacco tax filings; distributor reporting required",
+    "notes": [
+      "Washington has strict vape flavor bans and high enforcement activity."
+    ]
+  },
+  "West Virginia": {
+    "pact_agency": "West Virginia State Tax Department",
+    "pact_license": "Tobacco Distributor License",
+    "pact_fee": "~$25\u2013$100 annually",
+    "pact_portal": "https://tax.wv.gov/Business/TobaccoTax/",
+    "pact_portal_label": "West Virginia Tobacco Tax",
+    "excise_agency": "West Virginia State Tax Department",
+    "excise_tax": "$0.075 per mL",
+    "excise_portal": "https://mytaxes.wvtax.gov/",
+    "excise_portal_label": "WV MyTaxes Portal",
+    "filing": "Monthly tobacco tax filings; distributor reporting required",
+    "notes": [
+      "West Virginia is highly sensitive to tobacco compliance enforcement."
+    ]
+  },
+  "Wisconsin": {
+    "pact_agency": "Wisconsin Department of Revenue",
+    "pact_license": "Tobacco Products Distributor License",
+    "pact_fee": "~$20\u2013$150 annually",
+    "pact_portal": "https://www.revenue.wi.gov/Pages/Businesses/Tobacco.aspx",
+    "pact_portal_label": "Wisconsin Tobacco Tax",
+    "excise_agency": "Wisconsin Department of Revenue",
+    "excise_tax": "$0.05 per mL of any liquid in a vapor product",
+    "excise_portal": "https://tap.revenue.wi.gov/mta/_/",
+    "excise_portal_label": "Wisconsin My Tax Account",
+    "filing": "Monthly tobacco tax filings; distributor reporting required",
+    "notes": [
+      "Wisconsin enforces strict age verification and retail compliance rules."
+    ]
+  },
+  "Wyoming": {
+    "pact_agency": "Wyoming Department of Revenue",
+    "pact_license": "Tobacco Distributor License (includes vape/ENDS)",
+    "pact_fee": "~$25\u2013$100 annually",
+    "pact_portal": "https://revenue.wyo.gov/taxes/tobacco",
+    "pact_portal_label": "Wyoming Tobacco Tax",
+    "excise_agency": "Wyoming Department of Revenue",
+    "excise_tax": "15% of the wholesale purchase price",
+    "excise_portal": "https://excise-wyifs.wyo.gov/",
+    "excise_portal_label": "Wyoming Internet Filing",
+    "filing": "Monthly/quarterly tobacco filings; distributor reporting required",
+    "notes": [
+      "Wyoming is low-tax but still requires strict tobacco licensing compliance."
+    ]
+  }
+};
+
+const combobox = document.getElementById('combobox');
+const comboTrigger = document.getElementById('comboTrigger');
+const comboTriggerText = document.getElementById('comboTriggerText');
+const comboPanel = document.getElementById('comboPanel');
+const comboSearch = document.getElementById('comboSearch');
+const comboOptions = document.getElementById('comboOptions');
+
+let selectedState = '';
+
+function buildOptions(filter){
+  const q = (filter || '').trim().toLowerCase();
+  comboOptions.innerHTML = '';
+  const names = Object.keys(STATES).filter(name=>{
+    if(!q) return true;
+    return name.toLowerCase().includes(q) || abbrOf(name).toLowerCase().includes(q);
+  });
+  if(names.length === 0){
+    comboOptions.innerHTML = '<div class="combo-empty">No states match “' + filter + '”</div>';
+    return;
+  }
+  names.forEach(name=>{
+    const row = document.createElement('div');
+    row.className = 'combo-option' + (name === selectedState ? ' selected' : '');
+    row.setAttribute('role','option');
+    row.setAttribute('aria-selected', name === selectedState ? 'true' : 'false');
+    row.innerHTML = '<span class="code">'+abbrOf(name)+'</span><span class="name">'+name+'</span>';
+    row.addEventListener('click', ()=>{
+      selectedState = name;
+      comboTriggerText.innerHTML = '<span class="code">'+abbrOf(name)+'</span><span class="name">'+name+'</span>';
+      comboTriggerText.classList.remove('placeholder-text');
+      closeCombo();
+      render(name);
+    });
+    comboOptions.appendChild(row);
+  });
+}
+
+function openCombo(){
+  combobox.classList.add('open');
+  comboTrigger.setAttribute('aria-expanded','true');
+  comboSearch.value = '';
+  buildOptions('');
+  comboSearch.focus();
+}
+
+function closeCombo(){
+  combobox.classList.remove('open');
+  comboTrigger.setAttribute('aria-expanded','false');
+}
+
+comboTrigger.addEventListener('click', ()=>{
+  combobox.classList.contains('open') ? closeCombo() : openCombo();
+});
+
+comboSearch.addEventListener('input', e=>buildOptions(e.target.value));
+
+document.addEventListener('click', e=>{
+  if(!combobox.contains(e.target)) closeCombo();
+});
+
+document.addEventListener('keydown', e=>{
+  if(e.key === 'Escape') closeCombo();
+});
+
+function abbrOf(name){
+  const map = {"Alabama":"AL","Alaska":"AK","Arizona":"AZ","Arkansas":"AR","California":"CA","Colorado":"CO","Connecticut":"CT","Delaware":"DE","Florida":"FL","Georgia":"GA","Hawaii":"HI","Idaho":"ID","Illinois":"IL","Indiana":"IN","Iowa":"IA","Kansas":"KS","Kentucky":"KY","Louisiana":"LA","Maine":"ME","Maryland":"MD","Massachusetts":"MA","Michigan":"MI","Minnesota":"MN","Mississippi":"MS","Missouri":"MO","Montana":"MT","Nebraska":"NE","Nevada":"NV","New Hampshire":"NH","New Jersey":"NJ","New Mexico":"NM","New York":"NY","North Carolina":"NC","North Dakota":"ND","Ohio":"OH","Oklahoma":"OK","Oregon":"OR","Pennsylvania":"PA","Rhode Island":"RI","South Carolina":"SC","South Dakota":"SD","Tennessee":"TN","Texas":"TX","Utah":"UT","Vermont":"VT","Virginia":"VA","Washington":"WA","West Virginia":"WV","Wisconsin":"WI","Wyoming":"WY"};
+  return map[name] || name.slice(0,2).toUpperCase();
+}
+
+function render(name){
+  const s = STATES[name];
+  const result = document.getElementById('result');
+  const placeholder = document.getElementById('placeholder');
+  if(!s){ result.classList.remove('show'); placeholder.style.display='block'; return; }
+  placeholder.style.display='none';
+
+  document.getElementById('stampAbbr').textContent = abbrOf(name);
+  document.getElementById('stateName').textContent = name;
+  document.getElementById('stateFiling').textContent = s.filing || '';
+
+  document.getElementById('pactAgency').textContent = s.pact_agency;
+  document.getElementById('pactLicense').textContent = s.pact_license;
+  document.getElementById('pactFee').textContent = s.pact_fee;
+  const pactPortal = document.getElementById('pactPortal');
+  pactPortal.href = s.pact_portal;
+  pactPortal.textContent = (s.pact_portal_label || 'Open registration portal') + ' ↗';
+
+  document.getElementById('exciseAgency').textContent = s.excise_agency;
+  document.getElementById('exciseTax').textContent = s.excise_tax;
+  const excisePortal = document.getElementById('excisePortal');
+  excisePortal.href = s.excise_portal;
+  excisePortal.textContent = (s.excise_portal_label || 'Open tax portal') + ' ↗';
+
+  const notesWrap = document.getElementById('notesWrap');
+  notesWrap.innerHTML = '';
+  (s.notes||[]).forEach(n=>{
+    const div = document.createElement('div');
+    div.className = 'note-strip';
+    div.innerHTML = '<span class="ico">⚠</span><span>'+n+'</span>';
+    notesWrap.appendChild(div);
+  });
+
+  const specialWrap = document.getElementById('specialWrap');
+  const specialList = document.getElementById('specialList');
+  if(s.special && s.special.length){
+    specialWrap.style.display = 'block';
+    specialList.innerHTML = s.special.map(x=>'<li>'+x+'</li>').join('');
+  } else {
+    specialWrap.style.display = 'none';
+  }
+
+  renderChecklist(name, s);
+
+  result.classList.add('show');
+}
+
+function checklistItemsFor(s){
+  const items = [s.pact_license, 'Excise tax account with ' + s.excise_agency, s.filing, '21+ age verification system in place'];
+  if(s.special && s.special.length) items.push('Extra PACT Act steps for this state (see below)');
+  return items.filter(Boolean);
+}
+
+function renderChecklist(name, s){
+  const items = checklistItemsFor(s);
+  const list = document.getElementById('checklistList');
+  list.innerHTML = items.map(text=>'<li>'+text+'</li>').join('');
+}
+
+const federal = document.getElementById('federal');
+const federalToggle = document.getElementById('federalToggle');
+function toggleFederal(){
+  const isOpen = federal.classList.toggle('open');
+  federalToggle.setAttribute('aria-expanded', isOpen);
+}
+federalToggle.addEventListener('click', toggleFederal);
+federalToggle.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); toggleFederal(); } });
+</script>
+</body>
+</html>

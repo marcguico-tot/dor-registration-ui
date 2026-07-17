@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PACT &amp; Excise Registration</title>
+<title>Vape / ENDS · PACT &amp; Excise Registration</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1200,6 +1200,11 @@ const STATES = {
   }
 };
 
+/* Freeze the original row order so a rename in the sheet updates the same
+   entry (by position) instead of creating a duplicate keyed by new text. */
+const ORIGINAL_ORDER = Object.keys(STATES);
+ORIGINAL_ORDER.forEach(key=>{ STATES[key].display_name = key; });
+
 const combobox = document.getElementById('combobox');
 const comboTrigger = document.getElementById('comboTrigger');
 const comboTriggerText = document.getElementById('comboTriggerText');
@@ -1212,26 +1217,28 @@ let selectedState = '';
 function buildOptions(filter){
   const q = (filter || '').trim().toLowerCase();
   comboOptions.innerHTML = '';
-  const names = Object.keys(STATES).filter(name=>{
+  const keys = Object.keys(STATES).filter(key=>{
     if(!q) return true;
-    return name.toLowerCase().includes(q) || abbrOf(name).toLowerCase().includes(q);
+    const displayName = STATES[key].display_name || key;
+    return displayName.toLowerCase().includes(q) || abbrOf(key).toLowerCase().includes(q);
   });
-  if(names.length === 0){
+  if(keys.length === 0){
     comboOptions.innerHTML = '<div class="combo-empty">No states match “' + filter + '”</div>';
     return;
   }
-  names.forEach(name=>{
+  keys.forEach(key=>{
+    const displayName = STATES[key].display_name || key;
     const row = document.createElement('div');
-    row.className = 'combo-option' + (name === selectedState ? ' selected' : '');
+    row.className = 'combo-option' + (key === selectedState ? ' selected' : '');
     row.setAttribute('role','option');
-    row.setAttribute('aria-selected', name === selectedState ? 'true' : 'false');
-    row.innerHTML = '<span class="code">'+abbrOf(name)+'</span><span class="name">'+name+'</span>';
+    row.setAttribute('aria-selected', key === selectedState ? 'true' : 'false');
+    row.innerHTML = '<span class="code">'+abbrOf(key)+'</span><span class="name">'+displayName+'</span>';
     row.addEventListener('click', ()=>{
-      selectedState = name;
-      comboTriggerText.innerHTML = '<span class="code">'+abbrOf(name)+'</span><span class="name">'+name+'</span>';
+      selectedState = key;
+      comboTriggerText.innerHTML = '<span class="code">'+abbrOf(key)+'</span><span class="name">'+displayName+'</span>';
       comboTriggerText.classList.remove('placeholder-text');
       closeCombo();
-      render(name);
+      render(key);
     });
     comboOptions.appendChild(row);
   });
@@ -1277,7 +1284,7 @@ function render(name){
   placeholder.style.display='none';
 
   document.getElementById('stampAbbr').textContent = abbrOf(name);
-  document.getElementById('stateName').textContent = name;
+  document.getElementById('stateName').textContent = s.display_name || name;
   document.getElementById('stateFiling').textContent = s.filing || '';
 
   document.getElementById('pactAgency').textContent = s.pact_agency;
@@ -1369,23 +1376,31 @@ function cellText(cell){
 }
 
 function mergeLiveRows(rows){
-  (rows || []).forEach(row=>{
+  (rows || []).forEach((row, i)=>{
     const c = row.c || [];
-    const stateName = cellText(c[0]);
-    if(!stateName) return;
+    const rawName = cellText(c[0]);
 
-    let s = STATES[stateName];
+    // The first ORIGINAL_ORDER.length rows are identified by position, so
+    // editing/renaming the text in column A updates that same entry rather
+    // than spawning a duplicate. Rows appended past that are new
+    // jurisdictions, identified by their name text instead.
+    const stateKey = (i < ORIGINAL_ORDER.length) ? ORIGINAL_ORDER[i] : rawName;
+    if(!stateKey) return;
+
+    let s = STATES[stateKey];
     let isNew = false;
     if(!s){
-      s = STATES[stateName] = {
+      s = STATES[stateKey] = {
         pact_agency:'', pact_license:'', pact_fee:'',
         pact_portal:'', pact_portal_label:'Registration portal',
         excise_agency:'', excise_tax:'',
         excise_portal:'', excise_portal_label:'Tax portal',
-        filing:'', notes:[]
+        filing:'', notes:[], display_name: rawName || stateKey
       };
       isNew = true;
     }
+
+    if(rawName) s.display_name = rawName;
 
     const pactAgency = cellText(c[1]);
     const pactLicense = cellText(c[2]);

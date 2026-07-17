@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PACT &amp; Excise Registration</title>
+<title>Vape / ENDS · PACT &amp; Excise Registration</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -313,6 +313,30 @@
   .special li{margin-bottom:8px;}
   .special li:last-child{margin-bottom:0;}
 
+  .sync-status{
+    display:flex;align-items:center;gap:8px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11.5px;
+    color:var(--muted);
+    margin-left:auto;
+  }
+  .sync-status .dot{
+    width:7px;height:7px;border-radius:50%;
+    background:var(--muted);
+    flex:none;
+  }
+  .sync-status.live .dot{background:var(--teal);}
+  .sync-status.error .dot{background:var(--warn);}
+  .sync-status button{
+    background:none;border:none;color:var(--teal);
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11.5px;
+    cursor:pointer;
+    padding:0;
+    border-bottom:1px solid rgba(79,166,160,.35);
+  }
+  .sync-status button:hover{border-bottom-color:var(--teal);}
+
   footer{
     margin-top:48px;
     color:var(--muted);
@@ -376,6 +400,11 @@ Washington, DC 20226</div>
         <input type="text" class="combo-search" id="comboSearch" placeholder="Search states…" autocomplete="off">
         <div id="comboOptions"></div>
       </div>
+    </div>
+    <div class="sync-status" id="syncStatus">
+      <span class="dot"></span>
+      <span id="syncStatusText">Loading sheet data…</span>
+      <button type="button" id="syncRefreshBtn" style="display:none;">↻ Refresh</button>
     </div>
   </div>
 
@@ -1236,7 +1265,7 @@ document.addEventListener('keydown', e=>{
 });
 
 function abbrOf(name){
-  const map = {"Alabama":"AL","Alaska":"AK","Arizona":"AZ","Arkansas":"AR","California":"CA","Colorado":"CO","Connecticut":"CT","Delaware":"DE","Florida":"FL","Georgia":"GA","Hawaii":"HI","Idaho":"ID","Illinois":"IL","Indiana":"IN","Iowa":"IA","Kansas":"KS","Kentucky":"KY","Louisiana":"LA","Maine":"ME","Maryland":"MD","Massachusetts":"MA","Michigan":"MI","Minnesota":"MN","Mississippi":"MS","Missouri":"MO","Montana":"MT","Nebraska":"NE","Nevada":"NV","New Hampshire":"NH","New Jersey":"NJ","New Mexico":"NM","New York":"NY","North Carolina":"NC","North Dakota":"ND","Ohio":"OH","Oklahoma":"OK","Oregon":"OR","Pennsylvania":"PA","Rhode Island":"RI","South Carolina":"SC","South Dakota":"SD","Tennessee":"TN","Texas":"TX","Utah":"UT","Vermont":"VT","Virginia":"VA","Washington":"WA","West Virginia":"WV","Wisconsin":"WI","Wyoming":"WY"};
+  const map = {"Alabama":"AL","Alaska":"AK","Arizona":"AZ","Arkansas":"AR","California":"CA","Colorado":"CO","Connecticut":"CT","Delaware":"DE","Florida":"FL","Georgia":"GA","Hawaii":"HI","Idaho":"ID","Illinois":"IL","Indiana":"IN","Iowa":"IA","Kansas":"KS","Kentucky":"KY","Louisiana":"LA","Maine":"ME","Maryland":"MD","Massachusetts":"MA","Michigan":"MI","Minnesota":"MN","Mississippi":"MS","Missouri":"MO","Montana":"MT","Nebraska":"NE","Nevada":"NV","New Hampshire":"NH","New Jersey":"NJ","New Mexico":"NM","New York":"NY","North Carolina":"NC","North Dakota":"ND","Ohio":"OH","Oklahoma":"OK","Oregon":"OR","Pennsylvania":"PA","Rhode Island":"RI","South Carolina":"SC","South Dakota":"SD","Tennessee":"TN","Texas":"TX","Utah":"UT","Vermont":"VT","Virginia":"VA","Washington":"WA","West Virginia":"WV","Wisconsin":"WI","Wyoming":"WY","District of Columbia":"DC","Washington DC":"DC","Puerto Rico":"PR","Guam":"GU","U.S. Virgin Islands":"VI","American Samoa":"AS","Northern Mariana Islands":"MP"};
   return map[name] || name.slice(0,2).toUpperCase();
 }
 
@@ -1307,6 +1336,131 @@ function toggleFederal(){
 }
 federalToggle.addEventListener('click', toggleFederal);
 federalToggle.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); toggleFederal(); } });
+
+/* ---- Live sync with the "PACT & Excise" Google Sheet ---- */
+const SHEET_ID = '1HfAw-QuIRSL-kj0kti-iRVu5tU4d6rnAbNP9HWswfuA';
+const SHEET_NAME = 'PACT & Excise';
+let newStatesAdded = false;
+
+const syncStatusEl = document.getElementById('syncStatus');
+const syncStatusText = document.getElementById('syncStatusText');
+const syncRefreshBtn = document.getElementById('syncRefreshBtn');
+
+function setSyncStatus(kind, when){
+  syncStatusEl.classList.remove('live','error');
+  if(kind === 'live'){
+    syncStatusEl.classList.add('live');
+    const t = (when || new Date()).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+    syncStatusText.textContent = 'Synced with sheet · ' + t;
+    syncRefreshBtn.style.display = 'inline';
+  } else if(kind === 'error'){
+    syncStatusEl.classList.add('error');
+    syncStatusText.textContent = 'Showing cached data (sheet sync failed)';
+    syncRefreshBtn.style.display = 'inline';
+  } else {
+    syncStatusText.textContent = 'Loading sheet data…';
+    syncRefreshBtn.style.display = 'none';
+  }
+}
+
+function cellText(cell){
+  if(!cell || cell.v === null || cell.v === undefined) return '';
+  return String(cell.v).trim();
+}
+
+function mergeLiveRows(rows){
+  (rows || []).forEach(row=>{
+    const c = row.c || [];
+    const stateName = cellText(c[0]);
+    if(!stateName) return;
+
+    let s = STATES[stateName];
+    let isNew = false;
+    if(!s){
+      s = STATES[stateName] = {
+        pact_agency:'', pact_license:'', pact_fee:'',
+        pact_portal:'', pact_portal_label:'Registration portal',
+        excise_agency:'', excise_tax:'',
+        excise_portal:'', excise_portal_label:'Tax portal',
+        filing:'', notes:[]
+      };
+      isNew = true;
+    }
+
+    const pactAgency = cellText(c[1]);
+    const pactLicense = cellText(c[2]);
+    const pactFee = cellText(c[3]);
+    const pactPortal = cellText(c[4]);
+
+    const exciseAgency = cellText(c[6]);
+    const exciseFiling = cellText(c[7]);
+    const excisePortalCell = cellText(c[8]);
+    const exciseTax = cellText(c[9]);
+
+    if(pactAgency) s.pact_agency = pactAgency;
+    if(pactLicense) s.pact_license = pactLicense;
+    if(pactFee) s.pact_fee = pactFee;
+    if(pactPortal && /^https?:\/\//i.test(pactPortal)) s.pact_portal = pactPortal;
+
+    if(exciseAgency) s.excise_agency = exciseAgency;
+    if(exciseFiling) s.filing = exciseFiling;
+    if(exciseTax) s.excise_tax = exciseTax;
+
+    if(excisePortalCell){
+      if(/^https?:\/\//i.test(excisePortalCell)){
+        s.excise_portal = excisePortalCell;
+      } else {
+        s.excise_portal_label = excisePortalCell;
+      }
+    }
+
+    if(isNew) newStatesAdded = true;
+  });
+}
+
+function loadLiveSheetData(){
+  setSyncStatus('loading');
+  newStatesAdded = false;
+  const cbName = 'vapeSheetCallback_' + Date.now();
+  let done = false;
+
+  const cleanup = ()=>{
+    delete window[cbName];
+    if(script.parentNode) script.parentNode.removeChild(script);
+  };
+
+  window[cbName] = function(resp){
+    done = true;
+    try{
+      mergeLiveRows(resp && resp.table && resp.table.rows);
+      setSyncStatus('live', new Date());
+      if(newStatesAdded) syncStatusText.textContent += ' · new jurisdiction added';
+      if(selectedState) render(selectedState);
+      if(combobox.classList.contains('open')) buildOptions(comboSearch.value);
+    } catch(e){
+      console.error('Sheet parse error', e);
+      setSyncStatus('error');
+    } finally {
+      cleanup();
+    }
+  };
+
+  const url = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/gviz/tq?' +
+    'tqx=out:json;responseHandler:' + cbName +
+    '&sheet=' + encodeURIComponent(SHEET_NAME) +
+    '&headers=2';
+
+  const script = document.createElement('script');
+  script.src = url;
+  script.onerror = function(){ setSyncStatus('error'); cleanup(); };
+  document.head.appendChild(script);
+
+  setTimeout(()=>{ if(!done){ setSyncStatus('error'); cleanup(); } }, 8000);
+}
+
+syncRefreshBtn.addEventListener('click', loadLiveSheetData);
+loadLiveSheetData();
+
 </script>
 </body>
 </html>

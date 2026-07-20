@@ -1353,16 +1353,19 @@ const syncStatusEl = document.getElementById('syncStatus');
 const syncStatusText = document.getElementById('syncStatusText');
 const syncRefreshBtn = document.getElementById('syncRefreshBtn');
 
+const SOURCE_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1HfAw-QuIRSL-kj0kti-iRVu5tU4d6rnAbNP9HWswfuA/edit?gid=61377818#gid=61377818';
+const sheetLinkHtml = '<a href="'+SOURCE_SHEET_URL+'" target="_blank" rel="noopener">sheet</a>';
+
 function setSyncStatus(kind, when){
   syncStatusEl.classList.remove('live','error');
   if(kind === 'live'){
     syncStatusEl.classList.add('live');
     const t = (when || new Date()).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-    syncStatusText.textContent = 'Synced with sheet · ' + t;
+    syncStatusText.innerHTML = 'Synced with ' + sheetLinkHtml + ' · ' + t;
     syncRefreshBtn.style.display = 'inline';
   } else if(kind === 'error'){
     syncStatusEl.classList.add('error');
-    syncStatusText.textContent = 'Showing cached data (sheet sync failed)';
+    syncStatusText.innerHTML = 'Showing cached data (' + sheetLinkHtml + ' sync failed)';
     syncRefreshBtn.style.display = 'inline';
   } else {
     syncStatusText.textContent = 'Loading sheet data…';
@@ -1449,7 +1452,7 @@ function loadLiveSheetData(){
     try{
       mergeLiveRows(resp && resp.table && resp.table.rows);
       setSyncStatus('live', new Date());
-      if(newStatesAdded) syncStatusText.textContent += ' · new jurisdiction added';
+      if(newStatesAdded) syncStatusText.innerHTML += ' · new jurisdiction added';
       if(selectedState) render(selectedState);
       if(combobox.classList.contains('open')) buildOptions(comboSearch.value);
     } catch(e){
